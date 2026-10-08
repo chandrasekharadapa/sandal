@@ -21,7 +21,6 @@
             position: relative;
         }
 
-        /* Background glowing lines/waves */
         .bg-glow {
             position: absolute;
             width: 100%;
@@ -41,7 +40,6 @@
             box-shadow: 0 0 30px rgba(255, 102, 0, 0.1);
         }
 
-        /* Sidebar */
         sidebar {
             width: 70px;
             background-color: #121212;
@@ -75,7 +73,6 @@
             background-color: rgba(255, 102, 0, 0.1);
         }
 
-        /* Main Content Area */
         .main-container {
             flex: 1;
             display: flex;
@@ -83,7 +80,6 @@
             position: relative;
         }
 
-        /* Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -138,7 +134,6 @@
             color: #ff6600;
         }
 
-        /* Center Search Section */
         .center-content {
             flex: 1;
             display: flex;
@@ -178,7 +173,6 @@
             margin-bottom: 10px;
         }
 
-        /* Search Bar */
         .search-box {
             position: relative;
             width: 600px;
@@ -249,7 +243,6 @@
             box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
         }
 
-        /* Tags below search */
         .search-tags {
             display: flex;
             gap: 15px;
@@ -266,7 +259,6 @@
             color: #ff6600;
         }
 
-        /* Bottom Voice Assistant Section */
         .voice-section {
             display: flex;
             flex-direction: column;
@@ -334,7 +326,6 @@
             color: #888;
         }
 
-        /* Modal popup */
         .modal {
             display: none;
             position: fixed;
@@ -382,14 +373,6 @@
             margin-top: 15px;
         }
 
-        /* History Header inside modal with Trash Icon */
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
         .trash-icon-btn {
             background: none;
             border: none;
@@ -404,7 +387,6 @@
             transform: scale(1.1);
         }
 
-        /* Search Results Overlay */
         .search-results-overlay {
             display: none;
             position: fixed;
@@ -424,7 +406,6 @@
             padding-bottom: 15px;
         }
 
-        /* Cross (X) Close Button */
         .cross-close-btn {
             background: none;
             border: none;
@@ -451,7 +432,6 @@
         <div class="glow-line"></div>
     </div>
 
-    <!-- Sidebar Navigation -->
     <sidebar>
         <div class="sidebar-top">
             <div class="sidebar-icon active" title="Home" onclick="handleNav('Home')">🏠</div>
@@ -463,31 +443,23 @@
         </div>
     </sidebar>
 
-    <!-- Main Section -->
     <div class="main-container">
-        <!-- Header -->
         <header>
             <div class="logo-container">
                 <div class="logo-icon">S</div>
                 <div class="logo-text">SANDAL</div>
             </div>
             <div class="header-actions">
-                <button class="header-btn" onclick="openModal('History')">
-                    🕒 History
-                </button>
-                <button class="header-btn" onclick="openModal('Login')">
-                    👤 Login
-                </button>
+                <button class="header-btn" onclick="openModal('History')">🕒 History</button>
+                <button class="header-btn" onclick="openModal('Login')">👤 Login</button>
             </div>
         </header>
 
-        <!-- Center Search Area -->
         <div class="center-content">
             <div class="hero-logo">S</div>
             <div class="hero-title">SANDAL</div>
             <div class="hero-subtitle">Your AI Search Companion</div>
 
-            <!-- Search Input Box -->
             <div class="search-box">
                 <span class="search-icon-left">🔍</span>
                 <input type="text" id="searchInput" class="search-input" placeholder="Search anything..." onkeypress="handleSearch(event)">
@@ -497,14 +469,12 @@
                 </div>
             </div>
 
-            <!-- Suggestion Tags -->
             <div class="search-tags">
                 <span onclick="setQuery('Ask')">Ask</span> &bull; 
                 <span onclick="setQuery('Search')">Search</span> &bull; 
                 <span onclick="setQuery('Get Answers')">Get Answers</span>
             </div>
 
-            <!-- Voice Trigger Section at Bottom -->
             <div class="voice-section">
                 <div class="voice-waves" id="voiceWaves">
                     <div class="wave"></div>
@@ -519,7 +489,6 @@
         </div>
     </div>
 
-    <!-- Search Results View with Cross (X) Button -->
     <div class="search-results-overlay" id="searchResultsView">
         <div class="results-header">
             <h2 style="color: #ff6600;">SANDAL AI Results</h2>
@@ -528,7 +497,6 @@
         <div class="results-content" id="resultsBody"></div>
     </div>
 
-    <!-- Generic Modal -->
     <div class="modal" id="customModal">
         <div class="modal-content" id="modalContentBox">
             <h3 id="modalTitle">Modal Title</h3>
@@ -581,12 +549,22 @@
             const status = document.getElementById('voiceStatus');
             const waves = document.getElementById('voiceWaves');
             
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                status.innerText = "Speech recognition not supported in this browser.";
+                alert("Please use Kiwi Browser or Chrome with microphone permissions enabled.");
+                return;
+            }
+
             waves.classList.add('active-wave');
             status.innerText = "Listening... Speak now...";
             
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            try {
                 const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
                 
                 recognition.onresult = function(event) {
                     const speechText = event.results[0][0].transcript;
@@ -595,9 +573,9 @@
                     status.innerText = "Ready! Now click arrow to search.";
                 };
                 
-                recognition.onerror = function() {
+                recognition.onerror = function(event) {
                     stopVoiceAnimation();
-                    status.innerText = "Tap to speak (Error occurred)";
+                    status.innerText = "Mic error: Check permissions.";
                 };
 
                 recognition.onend = function() {
@@ -605,12 +583,9 @@
                 };
 
                 recognition.start();
-            } else {
-                setTimeout(() => {
-                    stopVoiceAnimation();
-                    document.getElementById('searchInput').value = "Sample voice query";
-                    status.innerText = "Ready! Now click arrow to search.";
-                }, 3000);
+            } catch (error) {
+                stopVoiceAnimation();
+                status.innerText = "Microphone failed to start.";
             }
         }
 
@@ -632,7 +607,6 @@
             } else if(type === 'History') {
                 let history = JSON.parse(localStorage.getItem('sandal_history')) || [];
                 
-                // మోడల్ టైటిల్ పక్కన లేదా హెడర్‌లో ట్రాష్ ఐకాన్ అమర్చడం
                 title.innerHTML = `History <button class="trash-icon-btn" onclick="clearHistory()" title="Clear History">🗑️</button>`;
 
                 if(history.length === 0) {
